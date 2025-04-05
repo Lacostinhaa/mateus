@@ -49,8 +49,21 @@ rendimento_total_percentual = ((valor_total_atual / valor_investido_total) - 1) 
 if not historico_df.empty and historico_df["Data"].iloc[-1] == str(data_hoje):
     pass
 else:
-    historico_df = historico_df.append({"Data": str(data_hoje), "Valor": valor_total_atual}, ignore_index=True)
-    historico_df.to_csv(arquivo_csv, index=False)
+   import os
+import pandas as pd
+
+if os.path.exists(arquivo_csv):
+    historico_df = pd.read_csv(arquivo_csv)
+else:
+    historico_df = pd.DataFrame(columns=["Data", "Valor"])
+
+# Agora sim, pode fazer append
+historico_df = historico_df.append(
+    {"Data": str(data_hoje), "Valor": valor_total_atual}, ignore_index=True
+)
+
+historico_df.to_csv(arquivo_csv, index=False)
+
 
 st.set_page_config(page_title="Painel de Pool - Meteora SOL/USDC", layout="wide")
 st.title("📊 Painel de Pool de Liquidez - Meteora SOL/USDC")
