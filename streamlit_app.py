@@ -16,20 +16,30 @@ valor_total_atual = 430.00
 data_hoje = date.today()
 arquivo_csv = "historico.csv"
 
-# Garante que o DataFrame existe antes de usar
-if os.path.exists(arquivo_csv):
-    historico_df = pd.read_csv(arquivo_csv)
-else:
+# Inicializa o DataFrame com segurança
+try:
+    if os.path.exists(arquivo_csv):
+        historico_df = pd.read_csv(arquivo_csv)
+        if historico_df.empty:
+            historico_df = pd.DataFrame(columns=["Data", "Valor"])
+    else:
+        historico_df = pd.DataFrame(columns=["Data", "Valor"])
+except Exception as e:
     historico_df = pd.DataFrame(columns=["Data", "Valor"])
 
-# Adiciona nova linha com concat (substituindo append)
-historico_df = pd.concat([
-    historico_df,
-    pd.DataFrame([{"Data": str(data_hoje), "Valor": valor_total_atual}])
-], ignore_index=True)
+# Garante que o dataframe tem as colunas certas
+if "Data" not in historico_df.columns or "Valor" not in historico_df.columns:
+    historico_df = pd.DataFrame(columns=["Data", "Valor"])
 
-# Salva o CSV
-historico_df.to_csv(arquivo_csv, index=False)
+# Adiciona nova linha com concat
+nova_linha = pd.DataFrame([{"Data": str(data_hoje), "Valor": valor_total_atual}])
+historico_df = pd.concat([historico_df, nova_linha], ignore_index=True)
+
+# Salva o CSV com segurança
+try:
+    historico_df.to_csv(arquivo_csv, index=False)
+except Exception as e:
+    st.warning("Erro ao salvar histórico. Verifique permissões de escrita.")
 
 if wallet:
     st.success(f"Analisando carteira: {wallet}")
